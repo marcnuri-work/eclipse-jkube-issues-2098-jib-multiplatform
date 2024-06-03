@@ -1,0 +1,48 @@
+plugins {
+  id 'org.eclipse.jkube.kubernetes' version '1.17-SNAPSHOT'
+  id 'org.springframework.boot' version '3.2.2'
+  id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+  id 'java'
+}
+
+group = 'com.marcnuri.work.helm'
+version = '0.0.1-SNAPSHOT'
+
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(17))
+  }
+}
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+dependencies {
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+}
+
+kubernetes {
+  images {
+    image {
+      name = 'marcnuri/repo-for-tests:latest'
+      build {
+        from = 'eclipse-temurin:21-ubi9-minimal'
+        env {
+          JAVA_OPTIONS = '-Xmx256m'
+        }
+        labels {
+          MAINTAINER = 'Marc Nuri'
+        }
+        assembly {
+          targetDir = '/deployments'
+        }
+        ports = ['8080']
+        entryPoint {
+          shell = "java -jar /deployments/${project.name}-${project.version}.jar"
+        }
+      }
+    }
+  }
+}
